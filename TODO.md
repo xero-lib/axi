@@ -1,2 +1,3 @@
+- [ ] Add mimalloc/jemalloc for faster allocation?
 - [ ] Look at how Rust lexes/parses/evals their code.
 - [ ] Add evaluation of Rust- and Python-like loops (including comprehensions and set builder notation)
