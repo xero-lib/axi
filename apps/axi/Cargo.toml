@@ -1,0 +1,21 @@
+
+[package]
+name = "axi"
+version = "0.1.0"
+edition = "2024"
+authors = ["Thoth"]
+description = "A fully-featured all-in-one calculator with advanced graphing and solving"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/xero-lib/axi"
+homepage = "https://github.com/xero-lib/axi"
+readme = "README.md"
+keywords = ["calculator", "math", "graphing", "repl", "expression"]
+categories = ["command-line-utilities", "mathematics", "visualization"]
+ 
+[[bin]]
+name = "axi"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.6", features = ["derive"] }
+

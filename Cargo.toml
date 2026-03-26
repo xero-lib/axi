@@ -1,19 +1,19 @@
+[workspace]
+members = [ "apps/*", "crates/*" ]
+resolver = "2"
 
-[package]
-name = "axi"
-version = "0.1.0"
-edition = "2024"
-authors = ["Thoth"]
-description = "A fully-featured all-in-one calculator with advanced graphing and solving"
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/xero-lib/axi"
-homepage = "https://github.com/xero-lib/axi"
-readme = "README.md"
-keywords = ["calculator", "math", "graphing", "repl", "expression"]
-categories = ["command-line-utilities", "mathematics", "visualization"]
- 
-[[bin]]
-name = "axi"
-path = "src/main.rs"
- 
-[dependencies]
+[workspace.dependencies]
+axi-embedded = { path = "apps/axi-embedded" }
+axi-web      = { path = "apps/axi-web" }
+axi          = { path = "apps/axi " }
+
+axi-types = { path = "crates/axi-types" }
+axi-core  = { path = "crates/axi-core" }
+axi-num   = { path = "crates/axi-num" }
+axi-tui   = { path = "crates/axi-tui" }
+axi-gui   = { path = "crates/axi-gui" }
+
+[profile.release]
+opt-level = 3
+lto = true
+strip = true
