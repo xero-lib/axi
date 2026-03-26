@@ -17,5 +17,5 @@ name = "axi"
 path = "src/main.rs"
 
 [dependencies]
+axi-core = { workspace = true }
 clap = { version = "4.6", features = ["derive"] }
-
