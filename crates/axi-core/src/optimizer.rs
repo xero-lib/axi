@@ -35,7 +35,7 @@ impl<'a> Optimizer<'a> {
             {
                 let binary_op = self.chunk[i + 4];
                 let a = self.chunk.constants[self.chunk[i + 1] as usize];
-                let b = self.chunk.constants[self.chunk[i + 2] as usize];
+                let b = self.chunk.constants[self.chunk[i + 3] as usize];
 
                 let result = if binary_op == Opcode::Add as u8 {
                     Some(a + b)
