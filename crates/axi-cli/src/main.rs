@@ -1,5 +1,6 @@
 use std::time::Instant;
-// Make sure these match your actual imports
+use std::hint::black_box;
+
 use axi_core::{Lexer, Parser, VM, Precedence, Opcode, num::Tensor };
 
 fn main() {
@@ -25,10 +26,10 @@ fn main() {
 
     let start = Instant::now();
 
-    let mut vm = VM::new(chunk, constants);
+    let mut vm = VM::new(black_box(chunk), black_box(constants));
     for _ in 0..iterations {
         vm.reset(chunk, constants);
-        let _ = vm.run(); 
+        let _ = black_box(vm.run()); 
     }
 
     let duration = start.elapsed();
