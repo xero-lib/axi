@@ -1,6 +1,7 @@
 use crate::{Chunk, vm::Opcode};
 use axi_num::Number;
 
+/// Optimizes Chunk bytecode in-place 
 pub struct Optimizer<'a> {
     chunk: &'a mut Chunk,
 }

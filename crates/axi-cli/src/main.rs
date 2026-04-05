@@ -14,7 +14,8 @@ fn main() {
     parser.chunk.emit_byte(Opcode::Return as u8);
 
     let mut optimizer = Optimizer::new(&mut parser.chunk);
-    optimizer.optimize();
+
+    optimizer.optimize(); // optimizes parser.chunk in-place
 
     let mut vm = VM::new(&parser.chunk);
     if let Ok(Tensor::Scalar(res)) = vm.run() {
