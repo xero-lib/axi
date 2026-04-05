@@ -1,14 +1,19 @@
 use axi_core::{Lexer, Opcode, Optimizer, Parser, Precedence, VM, num::Tensor};
 use std::hint::black_box;
+use std::process::ExitCode;
 use std::time::Instant;
 
-fn main() {
-    let source = "1+2+3+4+5+6+7+8+9";
+fn main() -> ExitCode {
+    let source = std::env::args().skip(1).collect::<String>();
+    if source.trim().is_empty() {
+        eprintln!("No test expression received. Exiting...");
+        return ExitCode::FAILURE;
+    }
     let iterations: usize = 1 << 26;
     println!("Expression: {}", source);
     println!("Iterations: {}", iterations);
 
-    let lexer = Lexer::new(source);
+    let lexer = Lexer::new(&source);
     let mut parser = Parser::new(lexer);
     parser.parse_expression(Precedence::None);
     parser.chunk.emit_byte(Opcode::Return as u8);
@@ -35,4 +40,6 @@ fn main() {
         "Speed: {:.2} million executions/second",
         ops_per_sec / 1_000_000.0
     );
+
+    ExitCode::SUCCESS
 }
