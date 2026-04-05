@@ -12,6 +12,7 @@ axi-core  = { path = "crates/axi-core" }
 axi-num   = { path = "crates/axi-num" }
 axi-tui   = { path = "crates/axi-tui" }
 axi-gui   = { path = "crates/axi-gui" }
+axi-cli   = { path = "crates/axi-cli" }
 
 [profile.release]
 opt-level = 3

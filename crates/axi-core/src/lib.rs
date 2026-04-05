@@ -2,6 +2,8 @@
 
 extern crate alloc;
 
-pub mod evaluator;
-pub mod parser;
+mod evaluator;
 pub mod lexer;
+pub mod parser;
+pub mod vm;
+pub use axi_num as num;
