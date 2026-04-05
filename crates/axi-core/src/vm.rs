@@ -17,8 +17,10 @@ pub enum Opcode {
     Divide = 5,
     /// Negate a number
     Negate = 6,
+    /// Add a constant
+    AddConstant = 7
     // /// Exponentiate a number by another
-    // Exponent = 7
+    // Exponent = 8
 }
 
 impl From<u8> for Opcode {
@@ -31,7 +33,8 @@ impl From<u8> for Opcode {
             4 => Opcode::Multiply,
             5 => Opcode::Divide,
             6 => Opcode::Negate,
-            // 7 => Opcode::Exponent,
+            7 => Opcode::AddConstant,
+            // 8 => Opcode::Exponent,
             _ => panic!("Encountered invalid operation."),
         }
     }
@@ -59,6 +62,13 @@ impl<'a> VM<'a> {
             stack: [Tensor::Scalar(Number::from(0.0)); 256],
             sp: 0,
         }
+    }
+
+    pub fn reset(&mut self, chunk: &'a [u8], constants: &'a [Number]) {
+        self.chunk = chunk;
+        self.constants = constants;
+        self.ip = 0;
+        self.sp = 0;
     }
 
     pub fn push(&mut self, value: Tensor<'a>) -> Result<(), &'static str> {
@@ -94,6 +104,13 @@ impl<'a> VM<'a> {
                     let i = self.read_byte() as usize; // next byte should tell us which constant to load
                     let val = self.constants[i];
                     self.push(Tensor::Scalar(val))?;
+                }
+                Opcode::AddConstant => {
+                    let index = self.read_byte() as usize;
+                    let val = self.constants[index];
+                    
+                    let a = self.pop()?;
+                    self.push(a + Tensor::Scalar(val))?;
                 }
                 Opcode::Negate => {
                     let val = self.pop()?;

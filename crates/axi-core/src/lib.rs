@@ -3,7 +3,11 @@
 extern crate alloc;
 
 mod evaluator;
-pub mod lexer;
-pub mod parser;
-pub mod vm;
+mod lexer;
+mod parser;
+mod vm;
+
 pub use axi_num as num;
+pub use vm::{ VM, Opcode };
+pub use lexer::{ Lexer, Token };
+pub use parser::{ Parser, Precedence };

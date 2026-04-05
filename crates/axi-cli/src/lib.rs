@@ -1,5 +1,5 @@
 use std::io::{self, Write};
-use axi_core::{ lexer::Lexer, num::Tensor, parser::{ Parser, Precedence }, vm::{Opcode, VM} };
+use axi_core::{ Lexer, num::Tensor, Parser, Precedence, Opcode, VM };
 
 pub fn init() {
     println!("Type 'exit' to quit.\n");

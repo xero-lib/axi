@@ -115,7 +115,20 @@ impl<'a> Parser<'a> {
         self.parse_expression(precedence);
 
         match operator_type {
-            Token::Add => self.emit_byte(Opcode::Add as u8),
+            // Token::Add => self.emit_byte(Opcode::Add as u8),
+            Token::Add => {
+                // check if the last two bytes were [OP_CONSTANT, index]
+                if self.chunk_len >= 2 && self.chunk[self.chunk_len - 2] == Opcode::Constant as u8 {
+                    let const_index = self.chunk[self.chunk_len - 1];
+                    self.chunk_len -= 2;
+                    
+                    self.emit_byte(Opcode::AddConstant as u8);
+                    self.emit_byte(const_index);
+                } else {
+                    // if it wasn't a constant just emit a normal Add
+                    self.emit_byte(Opcode::Add as u8);
+                }
+            }
             Token::Subtract => self.emit_byte(Opcode::Subtract as u8),
             Token::Multiply => self.emit_byte(Opcode::Multiply as u8),
             Token::Divide => self.emit_byte(Opcode::Divide as u8),
