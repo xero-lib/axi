@@ -127,7 +127,6 @@ name = "axi-core"
 version = "0.1.0"
 dependencies = [
  "axi-num",
- "axi-types",
 ]
 
 [[package]]
@@ -147,10 +146,6 @@ dependencies = [
 
 [[package]]
 name = "axi-tui"
-version = "0.1.0"
-
-[[package]]
-name = "axi-types"
 version = "0.1.0"
 
 [[package]]

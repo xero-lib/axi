@@ -7,7 +7,6 @@ axi-embedded = { path = "apps/axi-embedded" }
 axi-web      = { path = "apps/axi-web" }
 axi          = { path = "apps/axi " }
 
-axi-types = { path = "crates/axi-types" }
 axi-core  = { path = "crates/axi-core" }
 axi-num   = { path = "crates/axi-num" }
 axi-tui   = { path = "crates/axi-tui" }

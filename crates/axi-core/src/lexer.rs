@@ -35,18 +35,19 @@ impl<'a> Lexer<'a> {
         }
     }
 
+    #[inline]
     fn is_at_end(&self) -> bool {
         self.cursor >= self.source.len()
     }
 
-    fn peek(&self) -> u8 {
-        if self.is_at_end() {
-            return 0;
-        }
-        self.source[self.cursor]
-    }
+    // pub fn peek(&self) -> u8 {
+    //     if self.is_at_end() {
+    //         return 0;
+    //     }
+    //     self.source[self.cursor]
+    // }
 
-    fn next(&mut self) -> u8 {
+    pub fn next(&mut self) -> u8 {
         if self.is_at_end() {
             return 0;
         }
@@ -58,8 +59,8 @@ impl<'a> Lexer<'a> {
 
     fn skip_whitespace(&mut self) {
         while !self.is_at_end() {
-            match self.peek() {
-                b' ' | b'\r' | b'\t' | b'\n' => _ = self.next(),
+            match self.source[self.cursor] {
+                b' ' | b'\r' | b'\t' | b'\n' => self.cursor += 1,
                 _ => break,
             }
         }
@@ -69,23 +70,18 @@ impl<'a> Lexer<'a> {
         let start = self.cursor - 1;
 
         while !self.is_at_end() {
-            let byte = self.peek();
-            if (byte >= b'0' && byte <= b'9') || byte == b'.' {
-                self.next();
-            } else {
-                break;
+            match self.source[self.cursor] {
+                b'0'..=b'9' | b'.' => self.cursor += 1,
+                _ => break,
             }
         }
 
-        let number_bytes = &self.source[start..self.cursor];
+        let utf_str = core::str::from_utf8(&self.source[start..self.cursor])
+            .expect("Failed to parse verified utf-8: should be unreachable");
 
-        if let Ok(number_str) = core::str::from_utf8(number_bytes) {
-            match number_str.parse::<f64>() {
-                Ok(val) => Token::Number(val),
-                Err(_) => Token::Error("Invalid number format"),
-            }
-        } else {
-            Token::Error("Invalid character encountered in number parsing")
+        match utf_str.parse::<f64>() {
+            Ok(val) => Token::Number(val),
+            Err(_) => Token::Error("Invalid number format"),
         }
     }
 
@@ -93,18 +89,16 @@ impl<'a> Lexer<'a> {
         let start = self.cursor - 1;
 
         while !self.is_at_end() {
-            let c = self.peek();
-            if c.is_ascii_alphanumeric() || c == b'_' {
-                self.next();
-            } else {
-                break;
+            match self.source[self.cursor] {
+                b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'_' => self.cursor += 1,
+                _ => break,
             }
         }
 
-        match core::str::from_utf8(&self.source[start..self.cursor]) {
-            Ok(val) => Token::Identifier(val),
-            Err(_) => Token::Error("Invalid character encountered in identifier parsing"),
-        }
+        Token::Identifier(
+            core::str::from_utf8(&self.source[start..self.cursor])
+                .expect("Failed to parse verified utf-8: should be unreachable"),
+        )
     }
 
     pub fn next_token(&mut self) -> Token<'a> {

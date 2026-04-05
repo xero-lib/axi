@@ -1,40 +1,37 @@
-use std::time::Instant;
+use axi_core::{Lexer, Opcode, Optimizer, Parser, Precedence, VM, num::Tensor};
 use std::hint::black_box;
-
-use axi_core::{Lexer, Parser, VM, Precedence, Opcode, num::Tensor };
+use std::time::Instant;
 
 fn main() {
     let source = "1+2+3+4+5+6+7+8+9";
-    let iterations: usize = 1 << 26; 
-
+    let iterations: usize = 1 << 26;
     println!("Expression: {}", source);
     println!("Iterations: {}", iterations);
 
     let lexer = Lexer::new(source);
     let mut parser = Parser::new(lexer);
-    
     parser.parse_expression(Precedence::None);
-    parser.emit_byte(Opcode::Return as u8);
+    parser.chunk.emit_byte(Opcode::Return as u8);
 
-    let chunk = &parser.chunk[..parser.chunk_len];
-    let constants = &parser.constants;
+    let mut optimizer = Optimizer::new(&mut parser.chunk);
+    optimizer.optimize();
 
-    let mut test_vm = VM::new(chunk, constants);
-    if let Ok(Tensor::Scalar(res)) = test_vm.run() {
+    let mut vm = VM::new(&parser.chunk);
+    if let Ok(Tensor::Scalar(res)) = vm.run() {
         println!("Verification Pass: Result = {}", res.real);
     }
 
     let start = Instant::now();
-
-    let mut vm = VM::new(black_box(chunk), black_box(constants));
     for _ in 0..iterations {
-        vm.reset(chunk, constants);
-        let _ = black_box(vm.run()); 
+        vm.reset(&parser.chunk);
+        let _ = black_box(vm.run());
     }
 
     let duration = start.elapsed();
     let ops_per_sec = (iterations as f64) / duration.as_secs_f64();
-
     println!("Total Time: {:.2?}", duration);
-    println!("Speed: {:.2} million executions/second", ops_per_sec / 1_000_000.0);
+    println!(
+        "Speed: {:.2} million executions/second",
+        ops_per_sec / 1_000_000.0
+    );
 }

@@ -1,6 +1,9 @@
+// verstehen!
+
 use axi_num::Number;
 
 use crate::{
+    Chunk,
     lexer::{Lexer, Token},
     vm::Opcode,
 };
@@ -9,10 +12,10 @@ use crate::{
 pub enum Precedence {
     None,
     Assignment,
-    Term,     
-    Factor, 
+    Term,
+    Factor,
     Unary,
-    Power, 
+    Power,
     Primary,
 }
 
@@ -21,11 +24,7 @@ pub struct Parser<'a> {
     current: Token<'a>,
     peek: Token<'a>,
 
-    pub chunk: [u8; 512],
-    pub chunk_len: usize,
-
-    pub constants: [Number; 64],
-    pub constants_len: usize,
+    pub chunk: Chunk,
 }
 
 impl<'a> Parser<'a> {
@@ -37,10 +36,12 @@ impl<'a> Parser<'a> {
             lexer,
             current,
             peek,
-            chunk: [0; 512],
-            chunk_len: 0,
-            constants: [Number::from(0.0); 64],
-            constants_len: 0,
+            chunk: Chunk {
+                bytes: [0; 512],
+                len: 0,
+                constants: [Number::from(0.0); 64],
+                constants_len: 0,
+            },
         }
     }
     pub fn peek(&self) -> &Token<'a> {
@@ -52,24 +53,6 @@ impl<'a> Parser<'a> {
         self.peek = self.lexer.next_token();
     }
 
-    pub fn emit_byte(&mut self, byte: u8) {
-        self.chunk[self.chunk_len] = byte;
-        self.chunk_len += 1;
-    }
-
-    fn add_constant(&mut self, val: Number) -> usize {
-        for i in 0..self.constants_len {
-            if self.constants[i] == val {
-                return i;
-            }
-        }
-
-        let index = self.constants_len;
-        self.constants[index] = val;
-        self.constants_len += 1;
-        index
-    }
-
     fn emit_number(&mut self) {
         if let Token::Number(val) = self.current {
             let num = Number {
@@ -77,10 +60,10 @@ impl<'a> Parser<'a> {
                 imag: 0.0,
             };
 
-            let index = self.add_constant(num);
+            let index = self.chunk.add_constant(num);
 
-            self.emit_byte(Opcode::Constant as u8);
-            self.emit_byte(index as u8);
+            self.chunk.emit_byte(Opcode::Constant as u8);
+            self.chunk.emit_byte(index as u8);
         }
     }
 
@@ -102,7 +85,7 @@ impl<'a> Parser<'a> {
         self.parse_expression(Precedence::Unary);
 
         match operator_type {
-            Token::Subtract => self.emit_byte(Opcode::Negate as u8),
+            Token::Subtract => self.chunk.emit_byte(Opcode::Negate as u8),
             _ => return,
         }
     }
@@ -116,22 +99,10 @@ impl<'a> Parser<'a> {
 
         match operator_type {
             // Token::Add => self.emit_byte(Opcode::Add as u8),
-            Token::Add => {
-                // check if the last two bytes were [OP_CONSTANT, index]
-                if self.chunk_len >= 2 && self.chunk[self.chunk_len - 2] == Opcode::Constant as u8 {
-                    let const_index = self.chunk[self.chunk_len - 1];
-                    self.chunk_len -= 2;
-                    
-                    self.emit_byte(Opcode::AddConstant as u8);
-                    self.emit_byte(const_index);
-                } else {
-                    // if it wasn't a constant just emit a normal Add
-                    self.emit_byte(Opcode::Add as u8);
-                }
-            }
-            Token::Subtract => self.emit_byte(Opcode::Subtract as u8),
-            Token::Multiply => self.emit_byte(Opcode::Multiply as u8),
-            Token::Divide => self.emit_byte(Opcode::Divide as u8),
+            Token::Add => self.chunk.emit_byte(Opcode::Add as u8),
+            Token::Subtract => self.chunk.emit_byte(Opcode::Subtract as u8),
+            Token::Multiply => self.chunk.emit_byte(Opcode::Multiply as u8),
+            Token::Divide => self.chunk.emit_byte(Opcode::Divide as u8),
             _ => return,
         }
     }
@@ -150,7 +121,10 @@ impl<'a> Parser<'a> {
             Token::Number(_) => self.emit_number(),
             Token::Subtract => self.parse_unary(),
             Token::LeftParen => self.parse_grouping(),
-            _ => panic!("Parser Error: Expected a number or prefix operator, but found {:?}", self.current),
+            _ => panic!(
+                "Parser Error: Expected a number or prefix operator, but found {:?}",
+                self.current
+            ),
         }
     }
 

@@ -1,3 +1,3 @@
 #![no_std]
-mod number;
-pub use number::{Number, Tensor};
+mod types;
+pub use types::{Number, Tensor};
