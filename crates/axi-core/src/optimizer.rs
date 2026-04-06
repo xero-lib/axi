@@ -1,7 +1,7 @@
 use crate::{Chunk, vm::Opcode};
 use axi_num::Number;
 
-/// Optimizes Chunk bytecode in-place 
+/// Optimizes Chunk bytecode in-place
 pub struct Optimizer<'a> {
     chunk: &'a mut Chunk,
 }
@@ -37,20 +37,15 @@ impl<'a> Optimizer<'a> {
                 let a = self.chunk.constants[self.chunk[i + 1] as usize];
                 let b = self.chunk.constants[self.chunk[i + 3] as usize];
 
-                let result = if binary_op == Opcode::Add as u8 {
-                    Some(a + b)
-                } else if binary_op == Opcode::Subtract as u8 {
-                    Some(a - b)
-                } else if binary_op == Opcode::Multiply as u8 {
-                    Some(a * b)
-                } else if binary_op == Opcode::Divide as u8 {
-                    if b == Number::from(0.0) {
-                        None
-                    } else {
-                        Some(a / b)
-                    }
-                } else {
-                    None
+                let result = match binary_op.into() {
+                    Opcode::Add => Some(a + b),
+                    Opcode::Subtract => Some(a - b),
+                    Opcode::Multiply => Some(a * b),
+                    Opcode::Divide => match b {
+                        Number::ZERO => None,
+                        _ => Some(a / b),
+                    },
+                    _ => None,
                 };
 
                 if let Some(val) = result {

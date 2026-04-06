@@ -52,6 +52,50 @@ pub struct VM<'a> {
     sp: usize,
 }
 
+impl<'a> core::fmt::Debug for VM<'a> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let mut i = 0;
+        while i < self.bytes.len() {
+            match Opcode::from(self.bytes[i]) {
+                Opcode::Constant => {
+                    let index = self.bytes[i + 1];
+                    write!(
+                        f,
+                        "{:04} OP_CONSTANT [{}] = {}\n",
+                        i, index, self.constants[index as usize].real
+                    )?;
+                    i += 2;
+                }
+                Opcode::Add => {
+                    write!(f, "{:04} OP_ADD\n", i)?;
+                    i += 1;
+                }
+                Opcode::Subtract => {
+                    write!(f, "{:04} OP_SUBTRACT\n", i)?;
+                    i += 1;
+                }
+                Opcode::Multiply => {
+                    write!(f, "{:04} OP_MULTIPLY\n", i)?;
+                    i += 1;
+                }
+                Opcode::Divide => {
+                    write!(f, "{:04} OP_DIVIDE\n", i)?;
+                    i += 1;
+                }
+                Opcode::Negate => {
+                    write!(f, "{:04} OP_NEGATE\n", i)?;
+                    i += 1;
+                }
+                Opcode::Return => {
+                    write!(f, "{:04} OP_RETURN\n", i)?;
+                    i += 1;
+                }
+            }
+        }
+        Ok(())
+    }
+}
+
 impl<'a> VM<'a> {
     pub fn new(chunk: &'a Chunk) -> Self {
         VM {

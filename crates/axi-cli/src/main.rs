@@ -9,6 +9,7 @@ fn main() -> ExitCode {
         eprintln!("No test expression received. Exiting...");
         return ExitCode::FAILURE;
     }
+
     let iterations: usize = 1 << 26;
     println!("Expression: {}", source);
     println!("Iterations: {}", iterations);
@@ -30,7 +31,7 @@ fn main() -> ExitCode {
     let start = Instant::now();
     for _ in 0..iterations {
         vm.reset(&parser.chunk);
-        let _ = black_box(vm.run());
+        let _ = black_box(black_box(&mut vm).run());
     }
 
     let duration = start.elapsed();

@@ -6,6 +6,23 @@ pub struct Number {
     pub imag: f64,
 }
 
+impl Number {
+    pub const ZERO: Self = Self {
+        real: 0.0,
+        imag: 0.0,
+    };
+}
+
+impl PartialEq<f64> for Number {
+    fn eq(&self, other: &f64) -> bool {
+        self.is_real() && self.real == *other
+    }
+
+    fn ne(&self, other: &f64) -> bool {
+        self.is_imag() || self.real != *other
+    }
+}
+
 impl Neg for Number {
     type Output = Number;
     fn neg(self) -> Self::Output {

@@ -68,7 +68,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_grouping(&mut self) {
-        self.next();
+        self.next(); // consume (
 
         self.parse_expression(Precedence::None);
 
@@ -76,35 +76,7 @@ impl<'a> Parser<'a> {
             panic!("Expected ')' after expression");
         }
 
-        self.next();
-    }
-
-    fn parse_unary(&mut self) {
-        let operator_type = self.current;
-
-        self.parse_expression(Precedence::Unary);
-
-        match operator_type {
-            Token::Subtract => self.chunk.emit_byte(Opcode::Negate as u8),
-            _ => return,
-        }
-    }
-
-    fn parse_binary(&mut self, precedence: Precedence) {
-        let operator_type = self.current;
-
-        self.next();
-
-        self.parse_expression(precedence);
-
-        match operator_type {
-            // Token::Add => self.emit_byte(Opcode::Add as u8),
-            Token::Add => self.chunk.emit_byte(Opcode::Add as u8),
-            Token::Subtract => self.chunk.emit_byte(Opcode::Subtract as u8),
-            Token::Multiply => self.chunk.emit_byte(Opcode::Multiply as u8),
-            Token::Divide => self.chunk.emit_byte(Opcode::Divide as u8),
-            _ => return,
-        }
+        self.next(); // consume )
     }
 
     fn get_precedence(&self, token: Token) -> Precedence {
@@ -134,6 +106,49 @@ impl<'a> Parser<'a> {
         while precedence < self.get_precedence(self.peek) {
             self.next(); // move to the operator 
             self.infix_dispatch();
+        }
+
+        // implicit mul
+        while precedence < Precedence::Factor {
+            match self.peek {
+                Token::Identifier(_) | Token::LeftParen | Token::Number(_) => {
+                    self.next();
+                    self.prefix_dispatch();
+                    self.chunk.emit_byte(Opcode::Multiply as u8);
+                }
+
+                _ => break,
+            }
+        }
+    }
+
+    fn parse_unary(&mut self) {
+        let operator_type = self.current;
+
+        self.next();
+
+        self.parse_expression(Precedence::Unary);
+
+        match operator_type {
+            Token::Subtract => self.chunk.emit_byte(Opcode::Negate as u8),
+            _ => return,
+        }
+    }
+
+    fn parse_binary(&mut self, precedence: Precedence) {
+        let operator_type = self.current;
+
+        self.next();
+
+        self.parse_expression(precedence);
+
+        match operator_type {
+            // Token::Add => self.emit_byte(Opcode::Add as u8),
+            Token::Add => self.chunk.emit_byte(Opcode::Add as u8),
+            Token::Subtract => self.chunk.emit_byte(Opcode::Subtract as u8),
+            Token::Multiply => self.chunk.emit_byte(Opcode::Multiply as u8),
+            Token::Divide => self.chunk.emit_byte(Opcode::Divide as u8),
+            _ => return,
         }
     }
 
